@@ -1,0 +1,59 @@
+# Demo educativa: 1 backend NestJS + 3 frontends independientes
+#
+# Puertos expuestos al host:
+#   backend        → http://localhost:3000   (API REST + Swagger en /api)
+#   frontend-cards → http://localhost:3001
+#   frontend-table → http://localhost:3002
+#   frontend-split → http://localhost:3003
+#
+# Nota sobre URLs:
+#   Los frontends son HTML/JS estático servido por nginx.
+#   Las llamadas al backend las hace el BROWSER (en el host),
+#   por eso usan http://localhost:3000 y NO http://backend:3000.
+#   Si fueran llamadas server-side (SSR), usarían el nombre del servicio.
+
+version: '3.8'
+
+services:
+
+  # ── BACKEND ──────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    networks:
+      - demo-net
+
+  # ── FRONTEND CARDS (puerto 3001) ─────────────────────────────
+  frontend-cards:
+    build: ./frontend-cards
+    ports:
+      - "3001:80"
+    networks:
+      - demo-net
+    depends_on:
+      - backend
+
+  # ── FRONTEND TABLE (puerto 3002) ─────────────────────────────
+  frontend-table:
+    build: ./frontend-table
+    ports:
+      - "3002:80"
+    networks:
+      - demo-net
+    depends_on:
+      - backend
+
+  # ── FRONTEND SPLIT (puerto 3003) ─────────────────────────────
+  frontend-split:
+    build: ./frontend-split
+    ports:
+      - "3003:80"
+    networks:
+      - demo-net
+    depends_on:
+      - backend
+
+networks:
+  demo-net:
+    driver: bridge

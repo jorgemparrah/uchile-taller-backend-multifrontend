@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contactos — Vista Split</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:      #0d9488;
+      --teal-lt:   #f0fdfa;
+      --teal-mid:  #ccfbf1;
+      --slate:     #334155;
+      --slate-lt:  #f8fafc;
+      --border:    #e2e8f0;
+      --muted:     #64748b;
+      --text:      #1e293b;
+      --family:    #16a34a;
+      --work:      #2563eb;
+      --friend:    #d97706;
+      --red:       #dc2626;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--slate-lt);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────── */
+    header {
+      background: var(--slate);
+      color: #fff;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .header-brand {
+      font-size: .98rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .header-tags {
+      display: flex;
+      gap: 12px;
+      font-size: .71rem;
+      color: #94a3b8;
+    }
+
+    .header-tags span::before { content: '· '; }
+
+    /* ── SUBHEADER BAR ───────────────────────────── */
+    .sub-bar {
+      background: var(--teal);
+      color: #fff;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .75rem;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    /* ── SPLIT LAYOUT ────────────────────────────── */
+    .split {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      overflow: hidden;         /* children scroll independently */
+    }
+
+    /* ── LEFT PANEL — FORM ───────────────────────── */
+    .left {
+      background: #fff;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      padding: 20px 24px 14px;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .form-body {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: .88rem;
+      background: var(--slate-lt);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--teal);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(13,148,136,.1);
+    }
+
+    .form-group input.invalid { border-color: var(--red); }
+
+    .field-error {
+      font-size: .71rem;
+      color: var(--red);
+      display: none;
+    }
+    .field-error.show { display: block; }
+
+    /* category radio-style buttons */
+    .cat-options {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cat-opt {
+      flex: 1;
+      padding: 7px 4px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: .8rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      background: var(--slate-lt);
+      transition: all .15s;
+    }
+    .cat-opt:hover { border-color: #94a3b8; }
+    .cat-opt.sel-family { background: #f0fdf4; border-color: var(--family); color: var(--family); }
+    .cat-opt.sel-work   { background: #eff6ff; border-color: var(--work);   color: var(--work);   }
+    .cat-opt.sel-friend { background: #fffbeb; border-color: var(--friend); color: var(--friend); }
+
+    /* favorite inline checkbox */
+    .fav-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--slate-lt);
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .15s;
+    }
+    .fav-row:hover { border-color: #94a3b8; }
+    .fav-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--teal);
+      cursor: pointer;
+    }
+    .fav-row-label {
+      font-size: .88rem;
+      color: var(--text);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 10px;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background .15s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover:not(:disabled) { background: #0f766e; }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* notif inside form */
+    .form-notif {
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: .82rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      animation: fadeUp .2s ease;
+    }
+    .form-notif.ok  { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--family); }
+    .form-notif.err { background: #fef2f2; border: 1px solid #fecaca; color: var(--red); }
+
+    @keyframes fadeUp { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+
+    /* endpoint hint at bottom of form */
+    .endpoint-hint {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      font-size: .71rem;
+      color: #94a3b8;
+      line-height: 1.7;
+      flex-shrink: 0;
+    }
+
+    /* ── RIGHT PANEL — LIST ──────────────────────── */
+    .right {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .list-header {
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .list-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .count-chip {
+      background: var(--teal);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .btn-refresh {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 13px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: .82rem;
+      font-weight: 600;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-refresh:hover:not(:disabled) { background: var(--slate-lt); border-color: #94a3b8; }
+    .btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* contact list items */
+    .contacts-list {
+      flex: 1;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      border-left: 3px solid transparent;
+      transition: border-left-color .15s, box-shadow .15s;
+    }
+    .contact-row:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .contact-row.cat-family { border-left-color: var(--family); }
+    .contact-row.cat-work   { border-left-color: var(--work);   }
+    .contact-row.cat-friend { border-left-color: var(--friend); }
+
+    .row-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .82rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .av-family { background: var(--family); }
+    .av-work   { background: var(--work);   }
+    .av-friend { background: var(--friend); }
+
+    .row-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .row-name {
+      font-weight: 600;
+      font-size: .9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-phone {
+      font-size: .77rem;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      margin-top: 1px;
+    }
+
+    .row-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .cat-badge {
+      font-size: .67rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .cb-family { background: #dcfce7; color: #15803d; }
+    .cb-work   { background: #dbeafe; color: #1d4ed8; }
+    .cb-friend { background: #fef3c7; color: #b45309; }
+
+    .fav-icon {
+      font-size: .85rem;
+      color: #f59e0b;
+    }
+    .fav-icon.off { color: var(--border); }
+
+    /* state messages */
+    .state-msg {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+      color: var(--muted);
+      font-size: .88rem;
+      text-align: center;
+      gap: 8px;
+    }
+    .state-msg .ico { font-size: 2rem; }
+
+    /* spinner */
+    .spinner {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FOOTER ─────────────────────────────────── */
+    footer {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 12px;
+      font-size: .71rem;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 700px) {
+      .split {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        overflow: visible;
+      }
+      .right { min-height: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    ✂️ Contacts App
+  </div>
+  <div class="header-tags">
+    <span>Split View · Puerto 3003</span>
+    <span>Backend: localhost:3000</span>
+  </div>
+</header>
+
+<div class="sub-bar">Split View — Formulario + Lista en una sola pantalla</div>
+
+<!-- SPLIT -->
+<div class="split">
+
+  <!-- ══════════════ IZQUIERDA — FORMULARIO ══════════════ -->
+  <div class="left">
+
+    <div class="panel-title">📝 Nuevo contacto</div>
+
+    <div class="form-body">
+
+      <div id="formNotif"></div>
+
+      <!-- NAME -->
+      <div class="form-group">
+        <label>👤 Nombre</label>
+        <input type="text" id="f-name" placeholder="Nombre completo" autocomplete="off" />
+        <div class="field-error" id="err-name">Mínimo 2 caracteres</div>
+      </div>
+
+      <!-- PHONE -->
+      <div class="form-group">
+        <label>📞 Teléfono</label>
+        <input type="text" id="f-phone" placeholder="+56912345678" autocomplete="off" />
+        <div class="field-error" id="err-phone">Mínimo 8 caracteres</div>
+      </div>
+
+      <!-- CATEGORY -->
+      <div class="form-group">
+        <label>🏷️ Categoría</label>
+        <div class="cat-options">
+          <div class="cat-opt sel-family" data-cat="family" onclick="selectCat('family')">🏠 Familia</div>
+          <div class="cat-opt"           data-cat="work"   onclick="selectCat('work')">💼 Trabajo</div>
+          <div class="cat-opt"           data-cat="friend" onclick="selectCat('friend')">🤝 Amigo</div>
+        </div>
+        <input type="hidden" id="f-category" value="family" />
+      </div>
+
+      <!-- FAVORITE -->
+      <div class="form-group">
+        <label>⭐ Favorito</label>
+        <label class="fav-row" for="f-favorite">
+          <input type="checkbox" id="f-favorite" />
+          <span class="fav-row-label">Marcar como favorito</span>
+        </label>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" onclick="handleSubmit()">
+        💾 Guardar contacto
+      </button>
+
+    </div>
+
+    <div class="endpoint-hint">
+      Envía a → <strong>POST http://localhost:3000/contacts</strong><br>
+      Lista desde → <strong>GET &nbsp;http://localhost:3000/contacts</strong>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- ══════════════ DERECHA — LISTA ══════════════ -->
+  <div class="right">
+
+    <div class="list-header">
+      <div class="list-title">
+        Contactos
+        <span class="count-chip" id="countChip">–</span>
+      </div>
+      <button class="btn-refresh" id="refreshBtn" onclick="loadContacts()">
+        <span id="refreshIcon">↻</span> Actualizar
+      </button>
+    </div>
+
+    <div class="contacts-list" id="contactsList">
+      <div class="state-msg">
+        <span class="ico">⏳</span>
+        Cargando contactos…
+      </div>
+    </div>
+
+  </div><!-- /right -->
+
+</div><!-- /split -->
+
+<footer>
+  Frontend: Split View &nbsp;·&nbsp;
+  Consume: <strong>GET /contacts</strong> y <strong>POST /contacts</strong> &nbsp;·&nbsp;
+  Backend: <strong>http://localhost:3000</strong>
+</footer>
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+  const API = 'http://localhost:3000';
+
+  // ── utilidades ───────────────────────────────────────────────
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function initials(name) {
+    return name.trim().split(/\s+/).slice(0,2).map(w => w[0].toUpperCase()).join('');
+  }
+
+  // ── selector de categoría ────────────────────────────────────
+  function selectCat(cat) {
+    document.querySelectorAll('.cat-opt').forEach(el => {
+      el.className = 'cat-opt';
+      if (el.dataset.cat === cat) el.classList.add(`sel-${cat}`);
+    });
+    document.getElementById('f-category').value = cat;
+  }
+
+  // ── notificación en el formulario ────────────────────────────
+  function showFormNotif(msg, type) {
+    const el = document.getElementById('formNotif');
+    el.innerHTML = `<div class="form-notif ${type}">${type === 'ok' ? '✔' : '✖'} ${msg}</div>`;
+    setTimeout(() => { el.innerHTML = ''; }, 5000);
+  }
+
+  // ── validación ───────────────────────────────────────────────
+  function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input.invalid').forEach(e => e.classList.remove('invalid'));
+  }
+
+  function validate() {
+    clearErrors();
+    let ok = true;
+    const name  = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    if (name.length < 2) {
+      document.getElementById('err-name').classList.add('show');
+      document.getElementById('f-name').classList.add('invalid');
+      ok = false;
+    }
+    if (phone.length < 8) {
+      document.getElementById('err-phone').classList.add('show');
+      document.getElementById('f-phone').classList.add('invalid');
+      ok = false;
+    }
+    return ok;
+  }
+
+  // ── renderizar lista ─────────────────────────────────────────
+  function renderList(contacts) {
+    const list = document.getElementById('contactsList');
+    document.getElementById('countChip').textContent = contacts.length;
+
+    if (!contacts.length) {
+      list.innerHTML = `
+        <div class="state-msg">
+          <span class="ico">📭</span>
+          Sin contactos todavía.<br>¡Agrega el primero con el formulario!
+        </div>`;
+      return;
+    }
+
+    const catLabel = { family: 'Familia', work: 'Trabajo', friend: 'Amigo' };
+
+    list.innerHTML = contacts.map(c => `
+      <div class="contact-row cat-${c.category}">
+        <div class="row-avatar av-${c.category}">${esc(initials(c.name))}</div>
+        <div class="row-info">
+          <div class="row-name">${esc(c.name)}</div>
+          <div class="row-phone">${esc(c.phone)}</div>
+        </div>
+        <div class="row-right">
+          <span class="cat-badge cb-${c.category}">${catLabel[c.category]}</span>
+          <span class="fav-icon ${c.favorite ? '' : 'off'}" title="${c.favorite ? 'Favorito' : 'No favorito'}">
+            ${c.favorite ? '★' : '★'}
+          </span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── GET /contacts ─────────────────────────────────────────────
+  async function loadContacts() {
+    const btn  = document.getElementById('refreshBtn');
+    const icon = document.getElementById('refreshIcon');
+    const list = document.getElementById('contactsList');
+
+    btn.disabled = true;
+    icon.innerHTML = '<span class="spinner"></span>';
+    list.innerHTML = `
+      <div class="state-msg">
+        <span class="spinner"></span> Consultando el backend…
+      </div>`;
+    document.getElementById('countChip').textContent = '–';
+
+    try {
+      const res = await fetch(`${API}/contacts`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      renderList(await res.json());
+    } catch (err) {
+      list.innerHTML = `
+        <div class="state-msg">
+          <span class="ico">⚠️</span>
+          No se pudo conectar al backend.<br>
+          <small>${esc(err.message)}</small>
+        </div>`;
+      document.getElementById('countChip').textContent = '!';
+    } finally {
+      btn.disabled = false;
+      icon.textContent = '↻';
+    }
+  }
+
+  // ── POST /contacts ────────────────────────────────────────────
+  async function handleSubmit() {
+    if (!validate()) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Guardando…';
+
+    const body = {
+      name:     document.getElementById('f-name').value.trim(),
+      phone:    document.getElementById('f-phone').value.trim(),
+      category: document.getElementById('f-category').value,
+      favorite: document.getElementById('f-favorite').checked,
+    };
+
+    try {
+      const res = await fetch(`${API}/contacts`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        const msgs = Array.isArray(err.message) ? err.message.join(', ') : (err.message || `HTTP ${res.status}`);
+        throw new Error(msgs);
+      }
+
+      const created = await res.json();
+      // reiniciar formulario
+      document.getElementById('f-name').value  = '';
+      document.getElementById('f-phone').value = '';
+      document.getElementById('f-favorite').checked = false;
+      selectCat('family');
+      clearErrors();
+
+      showFormNotif(`<strong>${esc(created.name)}</strong> guardado (ID: ${created.id})`, 'ok');
+      loadContacts();
+    } catch (err) {
+      showFormNotif(`Error: ${esc(err.message)}`, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '💾 Guardar contacto';
+    }
+  }
+
+  // ── inicio ────────────────────────────────────────────────────
+  loadContacts();
+</script>
+
+</body>
+</html>
